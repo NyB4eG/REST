@@ -1,6 +1,6 @@
 # from django.shortcuts import render
 from rest_framework import mixins, viewsets
-from rest_framework.renderers import JSONRenderer
+from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 
 from .models import User
 from .serializers import UserSerializer
@@ -16,4 +16,4 @@ class UserCustomViewSet(
 ):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    renderer_classes = [JSONRenderer]
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]

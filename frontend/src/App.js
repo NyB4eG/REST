@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import logo from './logo.svg';
+import Cookies from 'universal-cookie';
 import './App.css';
 import './style.css'
 import UserList from './components/Users.js'
@@ -8,6 +8,7 @@ import ProjectList from './components/Projects.js'
 import TODOList from './components/TODOs.js'
 import MenuList from './components/Menu.js'
 import FooterContent from './components/Footer.js'
+import LoginForm from './components/Auth.js'
 import { BrowserRouter, Route, Link, Routes, Navigate } from 'react-router-dom'
 
 
@@ -30,23 +31,50 @@ class App extends React.Component {
             'todos': [],
             'menuItems': [],
             'footerContent': {},
+            'token': ''
         }
     }
 
-    componentDidMount() {
+    
 
-        // const users = [
-        //     {
-        //         'first_name': 'Фёдор',
-        //         'last_name': 'Достоевский',
-        //         'birthday_year': 1821
-        //     },
-        //     {
-        //         'first_name': 'Александр',
-        //         'last_name': 'Грин',
-        //         'birthday_year': 1880
-        //     },
-        // ]
+    set_token(token) {
+        const cookies = new Cookies()
+        cookies.set('token', token)
+        this.setState({ 'token': token }, () => this.load_data())
+    }
+
+    is_authenticated() {
+        return this.state.token !== ''
+    }
+
+    logout() {
+        this.set_token('')
+    }
+
+    get_token_from_storage() {
+        const cookies = new Cookies()
+        const token = cookies.get('token')
+        this.setState({ 'token': token }, () => this.load_data())
+    }
+
+    get_token(username, password) {
+        axios.post('http://127.0.0.1:8000/api-token-auth/', {username: username, password: password})
+        .then(response => {
+            this.set_token(response.data['token'])
+        }).catch(error => alert('Неверный логин или пароль'))
+    }
+
+    get_headers() {
+        let headers = {
+            'Content-Type': 'application/json'
+        }
+        if (this.is_authenticated()) {
+            headers['Authorization'] = 'Token ' + this.state.token
+        }
+        return headers
+    }
+
+    load_data() {
 
         const menuItems = [
             {
@@ -69,20 +97,29 @@ class App extends React.Component {
             'year': (new Date()).getFullYear()
         }
 
+        this.setState(
+            {
+                'menuItems': menuItems,
+                'footerContent': footerContent,
+            }
+        )
 
-        axios.get('http://127.0.0.1:8000/api/users/')
+        const headers = this.get_headers()
+
+        axios.get('http://127.0.0.1:8000/api/users/', { headers })
             .then(response => {
                 const users = response.data.results
                 this.setState(
                     {
                         'users': users,
-                        'menuItems': menuItems,
-                        'footerContent': footerContent,
                     }
                 )
-            }).catch(error => console.log(error))
+            }).catch(error => {
+                console.log(error)
+                this.setState({ users: [] })
+            })
 
-        axios.get('http://127.0.0.1:8000/api/projects/')
+        axios.get('http://127.0.0.1:8000/api/projects/', { headers })
             .then(response => {
                 const projects = response.data.results
                 this.setState(
@@ -90,9 +127,12 @@ class App extends React.Component {
                         'projects': projects,
                     }
                 )
-            }).catch(error => console.log(error))
+            }).catch(error => {
+                console.log(error)
+                this.setState({ projects: [] })
+            })
 
-        axios.get('http://127.0.0.1:8000/api/TODO/')
+        axios.get('http://127.0.0.1:8000/api/TODO/', { headers })
             .then(response => {
                 const todos = response.data.results
                 this.setState(
@@ -100,7 +140,14 @@ class App extends React.Component {
                         'todos': todos,
                     }
                 )
-            }).catch(error => console.log(error))
+            }).catch(error => {
+                console.log(error)
+                this.setState({ todos: [] })
+            })
+    }
+
+    componentDidMount() {
+        this.get_token_from_storage()
     }
 
     render() {
@@ -110,6 +157,10 @@ class App extends React.Component {
                     <div class="main_blocks_container">
                         <BrowserRouter>
                             <div class="left_block">
+                                <div class="menu_login_link">
+                                    {this.is_authenticated() ? <button
+                                        onClick={() => this.logout()}>Logout</button> : <Link to='/login'>Login</Link>}
+                                </div>
                                 <div class="menu">
                                     <MenuList menuItems={this.state.menuItems} />
 
@@ -122,6 +173,7 @@ class App extends React.Component {
                                         <Route exact path='/' element={<UserList users={this.state.users} />} />
                                         <Route exact path='/projects' element={<ProjectList projects={this.state.projects} />} />
                                         <Route exact path='/TODO' element={<TODOList todos={this.state.todos} />} />
+                                        <Route exact path='/login' element={<LoginForm get_token={(username, password) => this.get_token(username, password)} />} />
                                         <Route path="/users" element={<Navigate replace to="/" />} />
                                         <Route path='*' element={<NotFound404 />} />
                                     </Routes>
