@@ -11,7 +11,7 @@ const ProjectItem = ({ project }) => {
                 {project.repo_link}
             </td>
             <td>
-                {project.users}
+                {project.users.join('; ')}
             </td>
         </tr>
     )
