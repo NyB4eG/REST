@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "drf_yasg",
     "django_filters",
     "rest_framework",
     "rest_framework.authtoken",
@@ -149,4 +150,6 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
     ],
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning",
+    # "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
 }
