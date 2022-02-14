@@ -1,6 +1,6 @@
 import graphene
 from graphene_django import DjangoObjectType
-from tasksapp.models import Project, TODO
+from todoapp.models import Project, TODO
 from usersapp.models import User
 
 
