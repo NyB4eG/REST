@@ -26,6 +26,8 @@ from usersapp.views import UserCustomViewSet
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from graphene_django.views import GraphQLView
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Library",
@@ -48,8 +50,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls")),
     path("api-token-auth/", views.obtain_auth_token),
-    path("api/", include(router.urls)),
-    path("api/v<int:version>/users/", UserCustomViewSet.as_view({"get": "list"})),
+    path("api/v<str:version>/", include(router.urls)),
     re_path(
         r"^swagger(?P<format>\.json|\.yaml)$",
         schema_view.without_ui(cache_timeout=0),
@@ -61,4 +62,5 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+    path("graphql/", GraphQLView.as_view(graphiql=True), name="graphql"),
 ]

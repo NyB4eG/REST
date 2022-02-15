@@ -1,7 +1,16 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
+
+const UserItem = ({ user }) => {
+    return (
+        <p>
+            {user}
+        </p>
+    )
+}
 
 
-const ProjectItem = ({ project }) => {
+const ProjectItem = ({ project, deleteProject }) => {
     return (
         <tr>
             <td>
@@ -11,15 +20,18 @@ const ProjectItem = ({ project }) => {
                 {project.repo_link}
             </td>
             <td>
-                {project.users.join('; ')}
+                {project.users.map((user) => <UserItem user={user} />)}
+                
             </td>
+            <td><button onClick={() => deleteProject(project.uuid)} type='button'>Delete</button></td>
         </tr>
     )
 }
 
 
-const ProjectList = ({ projects }) => {
+const ProjectList = ({ projects, deleteProject }) => {
     return (
+        <div>
         <table>
             <th>
                 Name
@@ -30,8 +42,11 @@ const ProjectList = ({ projects }) => {
             <th>
                 Users
             </th>
-            {projects.map((project) => <ProjectItem project={project} />)}
+            <th></th>
+            {projects.map((project) => <ProjectItem project={project} deleteProject={deleteProject} />)}
         </table>
+        <Link to='/projects/create'>Create</Link>
+    </div>
     )
 }
 

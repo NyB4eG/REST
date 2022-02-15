@@ -12,6 +12,7 @@ class UserSerializer(ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "uuid",
         ]
 
 class UserSerializerWithDetails(ModelSerializer):
